@@ -1,27 +1,16 @@
 server:
-  port: 8002
+  port: 8003
   servlet:
     context-path: /series/
 
+# Configuración base de datos de persistencia MongoDB según consigna
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driverClassName: org.h2.Driver
-    username: sa
-    password: sa
-  jpa:
-    open-in-view: false
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/series
+    username: root
+    password: root
+    authentication-database: admin
 
 # Configuración de eureka client
 eureka:
@@ -31,11 +20,10 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
-
-message: Hello from serie-service
+message: Hello from serie-service!!
 
 # Configuración de swagger
-springdoc:
+spring-doc:
   swagger-ui:
     path: /swagger-doc/swagger-ui.html
   show-actuator: true
