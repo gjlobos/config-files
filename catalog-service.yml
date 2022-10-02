@@ -3,26 +3,16 @@ server:
   servlet:
     context-path: /catalog/
 
+# Configuración base de datos de persistencia MongoDB según consigna
 spring:
-  datasource:
-    url: jdbc:h2:mem:testdb
-    driverClassName: org.h2.Driver
-    username: sa
-    password: sa
-  jpa:
-    open-in-view: false
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-        format_sql: true
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/catalog
+    username: root
+    password: root
+    authentication-database: admin
 
+# Configuración de eureka client
 eureka:
   instance:
     hostname: localhost
@@ -30,11 +20,74 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka
+message: Hello from catalog-service!!
 
-message: Hello from Catalog Server
+# Configuración de swagger
+spring-doc:
+  swagger-ui:
+    path: /swagger-doc/swagger-ui.html
+  show-actuator: true
+  api-docs:
+    path: /swagger-doc/v3/api-docs
+    groups:
+      enabled: true
 
+# Configuración de actuator para que muestre endpoints
+# de info, health y circuitbreakers
 management:
   endpoints:
     web:
       exposure:
-        include: '*'
+        include: info, health, circuitbreakers, circuitbreakerevents
+  info:
+    env:
+      enabled: true
+  endpoint:
+    info:
+      enabled: true
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+# info properties
+info:
+  app:
+    name: ${spring.application.name}
+    version: 1.0.0
+    description: catalog-service
+  svc:
+    port: ${server.port}
+
+# Configuración del circuitbreaker para el microservicio catalog-service
+# Se instala en este microservicio porque es el que realiza las peticiones
+# a los microservicios movie-service y serie-service
+resilience4j:
+  circuitbreaker:
+    configs:
+      defecto:
+        sliding-window-type: COUNT_BASED                          // Define el método por contador de eventos
+        sliding-window-size: 6                                    // Define el número de llamadas que se van a chequear para ir a open
+        failure-rate-threshold: 50                                // Define el % de llamadas fallidas antes de ir a open
+        automatic-transition-from-open-to-half-open-enabled: true // Pasa automático a half-open cuando se cumple el tiempo de espera
+        wait-duration-in-open-state: 20s                          // Define el tiempo que se va a esperar en open antes de ir a half-open
+        permitted-number-of-calls-in-half-open-state: 4           // Define el número de llamadas que se van a permitir en half-open para pasar a close o a open
+        slow-call-rate-threshold: 50                              // Define el % de llamadas lentas antes de ir a open
+        slow-call-duration-threshold: 2s                          // Define el tiempo máximo que se va a permitir para que una llamada sea considerada lenta
+        register-health-indicator: true                           // Registra el circuitbreaker en el health
+        allow-health-indicator-to-fail: true                      // Permite que el health falle si el circuitbreaker está en open
+        management:
+          health:
+            circuit-breakers:
+              enabled: true                                      // Activa el health del circuitbreaker
+    instances:
+      catalog-service:
+        base-config: defecto                                     // Define el circuitbreaker por defecto para el microservicio catalog-service
+  timelimiter:
+    configs:
+      defecto:
+        timeout-duration: 3s
+    instances:
+      catalog-service:
+        base-config: defecto
