@@ -23,8 +23,6 @@ spring:
           predicates:
             - Path=/movies/**
           filters:
-            - StripPrefix=3
-#           - CircuitBreaker=movies
             - name: CircuitBreaker
               args:
                 name: movies
@@ -35,8 +33,6 @@ spring:
           predicates:
             - Path=/series/**
           filters:
-            - StripPrefix=3
-            #           - CircuitBreaker=series
             - name: CircuitBreaker
               args:
                 name: series
@@ -46,12 +42,7 @@ spring:
           uri: lb://catalog-service
           predicates:
             - Path=/catalog/**
-      globalcors:
-        corsConfigurations:
-          '[/**]':
-            allowedOrigins: 'http://localhost:4200'
-            allowedMethods: GET, POST, PUT, DELETE, OPTIONS
-            allowedHeaders: Content-Type
+
 
 
 
