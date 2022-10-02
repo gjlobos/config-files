@@ -46,16 +46,14 @@ spring:
           uri: lb://catalog-service
           predicates:
             - Path=/catalog/**
-        - globalcors:
-          cors-configurations:
-            '[/**]':
-              allowedOrigin: 'http://localhost:4200'
-              allowedHeaders:
-                - Content-Type
-              allowedMethods:
-                - GET
-                - POST
-                - PUT
-                - DELETE
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: 'http://localhost:4200'
+            allowedMethods: GET, POST, PUT, DELETE, OPTIONS
+            allowedHeaders: Content-Type
+
+
+
 
 
