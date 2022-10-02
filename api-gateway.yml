@@ -1,6 +1,7 @@
 server:
   port: 8080
 
+# Configuración de eureka client
 eureka:
   instance:
     hostname: localhost
@@ -12,6 +13,7 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka
 
+# Configuraciónn de routes
 spring:
   cloud:
     gateway:
@@ -20,7 +22,40 @@ spring:
           uri: lb://movie-service
           predicates:
             - Path=/movies/**
+          filters:
+            - StripPrefix=3
+#           - CircuitBreaker=movies
+            - name: CircuitBreaker
+              args:
+                name: movies
+                statusCodes: 500
+                fallbackUri: forward:/catalog/**
+        - id: seriesRoute
+          uri: lb://serie-service
+          predicates:
+            - Path=/series/**
+          filters:
+            - StripPrefix=3
+            #           - CircuitBreaker=series
+            - name: CircuitBreaker
+              args:
+                name: series
+                statusCodes: 500
+                fallbackUri: forward:/catalog/**
         - id: catalogRoute
           uri: lb://catalog-service
           predicates:
             - Path=/catalog/**
+        - globalcors:
+          cors-configurations:
+            '[/**]':
+              allowedOrigin: 'http://localhost:4200'
+              allowedHeaders:
+                - Content-Type
+              allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+
+
